@@ -13,7 +13,7 @@ function getWeather(city, callback) {
   setTimeout(function () {
 
     if (!city) {
-      callback("City required to get weather");
+      callback(new Error("City required to get weather"));
       return;
     }
 
@@ -30,7 +30,7 @@ function getForecast(city, callback) {
   setTimeout(function () {
 
     if (!city) {
-      callback("City required to get forecast");
+      callback(new Error("City required to get forecast"));
       return;
     }
 
