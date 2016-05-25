@@ -62,3 +62,12 @@ test("fetchCurrentCity with separate success and error callbacks", function (don
     error => done(error));
 
 });
+
+test("fetchCurrentCity pass the callbacks later on", function (done) {
+
+  const operation = fetchCurrentCity();
+  operation.setCallbacks(
+    result => done(),
+    error => done(error));
+  
+});
