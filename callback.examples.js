@@ -1,6 +1,6 @@
 suite("Callback examples");
 
-test("Nesting serial async dependencies with callbacks", done => {
+test("Nesting serial async dependencies", done => {
 
   getCurrentCity(function (error, city) {
 
@@ -14,7 +14,7 @@ test("Nesting serial async dependencies with callbacks", done => {
 
 });
 
-test("Parallelism with callbacks", done => {
+test("Parallel result synchronization", done => {
 
   const city = "NYC";
 
@@ -45,7 +45,7 @@ test("Parallelism with callbacks", done => {
 
 });
 
-test("Combined serial async dependencies and parallel result sync", done => {
+test("Combined serial async dependencies and parallel result synchronization", done => {
 
   getCurrentCity(function (error, city) {
 
@@ -78,3 +78,5 @@ test("Combined serial async dependencies and parallel result sync", done => {
   });
 
 });
+
+// note: more callback challenges can be done here, for example multiple callbacks

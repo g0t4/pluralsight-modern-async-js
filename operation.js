@@ -42,13 +42,3 @@ function getForecast(city, callback) {
 
   }, delayms)
 }
-
-suite("Operations");
-
-test("Passing test", function(){
-  expect(true).toBe(true);
-});
-
-test("Failing test", function(){
-  expect(true).toBe(false);
-});
