@@ -56,7 +56,7 @@ function fetchCurrentCity() {
     operation.onSuccess(result);
   });
 
-  operation.setCallbacks = function setCallbacks(onSuccess, onError){
+  operation.setCallbacks = function setCallbacks(onSuccess, onError) {
     operation.onSuccess = onSuccess;
     operation.onError = onError;
   };
@@ -72,5 +72,19 @@ test("fetchCurrentCity pass the callbacks later on", function (done) {
   operation.setCallbacks(
     result => done(),
     error => done(error));
-  
+
 });
+
+/* Avoid timing issues with initializing a database
+ // initiate operation
+ const initDb = initiateDB();
+
+ // register callbacks
+ initDb.setCallbacks(function(db){
+ db.InsertPayment();
+ });
+
+ initDb.setCallbacks(function(db){
+ db.InsertUser();
+ })
+ );*/
