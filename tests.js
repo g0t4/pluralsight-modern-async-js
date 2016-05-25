@@ -1,9 +1,13 @@
-
-
-it("should pass a test", function(){
-  expect(true).toBe(true);  
+test("should pass a test", function () {
+  expect(true).toBe(true);
 });
 
-it("should fail a test", function(){
-  expect(true).toBe(false);  
+test("should fail a test", () => {
+  expect(true).toBe(false);
+});
+
+test("async test", done => {
+
+  setTimeout(done, 1);
+
 });
