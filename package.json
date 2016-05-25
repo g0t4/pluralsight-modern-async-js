@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "pluralsight-modern-async-js",
+  "description": "This is a starting point for my Pluralsight course \"Modern Asynchronous JavaScript\"",
+  "dependencies": {
+    "expect": "^1.20.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wes Higbee"
+}
