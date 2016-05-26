@@ -46,19 +46,22 @@ function getForecast(city, callback) {
 suite.only("operations");
 
 function fetchCurrentCity() {
-  const operation = {};
+  const operation = {
+    successReactions: [],
+    errorReactions: []
+  };
 
   getCurrentCity(function (error, result) {
     if (error) {
-      operation.onError(error);
+      operation.errorReactions.forEach(r => r(error));
       return;
     }
-    operation.onSuccess(result);
+    operation.successReactions.forEach(r => r(result));
   });
 
   operation.setCallbacks = function setCallbacks(onSuccess, onError) {
-    operation.onSuccess = onSuccess;
-    operation.onError = onError;
+    operation.successReactions.push(onSuccess);
+    operation.errorReactions.push(onError);
   };
   return operation;
 }
