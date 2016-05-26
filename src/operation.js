@@ -63,6 +63,17 @@ function fetchCurrentCity() {
   return operation;
 }
 
+test("pass multiple callbacks - all of them are called", function (done) {
+
+  const operation = fetchCurrentCity();
+
+  const multiDone = callDone(done).afterTwoCalls();
+
+  operation.setCallbacks(result => multiDone());
+  operation.setCallbacks(result => multiDone());
+
+});
+
 test("fetchCurrentCity pass the callbacks later on", function (done) {
 
   // initiate operation
