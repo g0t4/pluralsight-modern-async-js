@@ -59,9 +59,12 @@ function fetchCurrentCity() {
     operation.successReactions.forEach(r => r(result));
   });
 
-  operation.setCallbacks = function setCallbacks(onSuccess, onError) {
+  operation.onCompletion = function setCallbacks(onSuccess, onError) {
     operation.successReactions.push(onSuccess);
     operation.errorReactions.push(onError);
+  };
+  operation.onFailure = function onFailure(onError){
+    operation.onCompletion(null, onError);
   };
   return operation;
 }
@@ -72,8 +75,23 @@ test("pass multiple callbacks - all of them are called", function (done) {
 
   const multiDone = callDone(done).afterTwoCalls();
 
-  operation.setCallbacks(result => multiDone());
-  operation.setCallbacks(result => multiDone());
+  operation.onCompletion(result => multiDone());
+  
+  
+  
+  
+  operation.onFailure(error => multiDone());
+
+});
+
+test("pass multiple callbacks - all of them are called", function (done) {
+
+  const operation = fetchCurrentCity();
+
+  const multiDone = callDone(done).afterTwoCalls();
+
+  operation.onCompletion(result => multiDone());
+  operation.onCompletion(result => multiDone());
 
 });
 
@@ -83,7 +101,7 @@ test("fetchCurrentCity pass the callbacks later on", function (done) {
   const operation = fetchCurrentCity();
 
   // register callbacks
-  operation.setCallbacks(
+  operation.onCompletion(
     result => done(),
     error => done(error));
 
@@ -94,11 +112,11 @@ test("fetchCurrentCity pass the callbacks later on", function (done) {
  const initDb = initiateDB();
 
  // register callbacks
- initDb.setCallbacks(function(db){
+ initDb.onCompletion(function(db){
  db.InsertPayment();
  });
 
- initDb.setCallbacks(function(db){
+ initDb.onCompletion(function(db){
  db.InsertUser();
  })
  );*/
