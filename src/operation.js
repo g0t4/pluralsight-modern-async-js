@@ -46,52 +46,54 @@ function getForecast(city, callback) {
 suite.only("operations");
 
 function fetchCurrentCity() {
-  const operation = {
-    successReactions: [],
-    errorReactions: []
-  };
+  const operation = new Operation();
 
-  getCurrentCity(function (error, result) {
-    if (error) {
-      operation.errorReactions.forEach(r => r(error));
-      return;
-    }
-    operation.successReactions.forEach(r => r(result));
-  });
+  getCurrentCity(operation.nodeCallback);
 
-  operation.onCompletion = function setCallbacks(onSuccess, onError) {
-    const noop = function () {};
-    operation.successReactions.push(onSuccess || noop);
-    operation.errorReactions.push(onError);
-  };
-  operation.onFailure = function onFailure(onError) {
-    operation.onCompletion(null, onError);
-  };
   return operation;
 }
 
-function fetchWeather(city){
+function Operation() {
+
   const operation = {
     successReactions: [],
     errorReactions: []
   };
 
-  getWeather(city, function (error, result) {
-    if (error) {
-      operation.errorReactions.forEach(r => r(error));
-      return;
-    }
+  operation.fail = function fail(error) {
+    operation.errorReactions.forEach(r => r(error));
+  };
+
+  operation.succeed = function succeed(result) {
     operation.successReactions.forEach(r => r(result));
-  });
+  };
 
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
     const noop = function () {};
     operation.successReactions.push(onSuccess || noop);
     operation.errorReactions.push(onError || noop);
   };
+
   operation.onFailure = function onFailure(onError) {
     operation.onCompletion(null, onError);
   };
+
+  operation.nodeCallback = function nodeCallback(error, result) {
+    if (error) {
+      operation.fail(error);
+      return;
+    }
+    operation.succeed(result);
+  };
+
+  return operation;
+}
+
+function fetchWeather(city) {
+  const operation = new Operation();
+
+  getWeather(city, operation.nodeCallback);
+
   return operation;
 }
 
@@ -101,7 +103,7 @@ test("noop if no success handler passed", function (done) {
 
   // noop should register for success handler
   operation.onFailure(error => done(error));
-  
+
   // trigger success to make sure noop registered 
   operation.onCompletion(result => done());
 
