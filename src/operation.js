@@ -60,27 +60,33 @@ function fetchCurrentCity() {
   });
 
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
-    operation.successReactions.push(onSuccess);
+    const noop = function () {};
+    operation.successReactions.push(onSuccess || noop);
     operation.errorReactions.push(onError);
   };
-  operation.onFailure = function onFailure(onError){
+  operation.onFailure = function onFailure(onError) {
     operation.onCompletion(null, onError);
   };
   return operation;
 }
 
-test("pass multiple callbacks - all of them are called", function (done) {
+test("register only error handler, ignores success handler", function (done) {
 
   const operation = fetchCurrentCity();
 
-  const multiDone = callDone(done).afterTwoCalls();
+  operation.onFailure(error => done(error));
+  operation.onCompletion(result => done());
 
-  operation.onCompletion(result => multiDone());
-  
-  
-  
-  
-  operation.onFailure(error => multiDone());
+});
+
+test("register only success handler, ignores error handler", function (done) {
+
+  // todo operation that can fail
+  const operation = fetchCurrentCity();
+
+  operation.onCompletion(result => done(new Error("shouldn't succeed")));
+
+  operation.onFailure(error => done());
 
 });
 
