@@ -141,6 +141,77 @@ function doLater(func) {
 
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
+
+
+
+
+
+  // nesting callbacks
+  fetchCurrentCity().then(function (city) {
+    fetchWeather(city).then(function (weather) {
+      console.log(weather);
+      done();
+    });
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // creating an explicit operation to proxy a future operation
+  let weatherOp = new Operation();
+  fetchCurrentCity().onCompletion(function (city) {
+
+    fetchWeather(city).onCompletion(function (weather) {
+      weatherOp.succeed(weather);
+      console.log(weather);
+    });
+
+  });
+
+  // some other code needs to use weather response
+  // in another part of app
+  weatherOp.onCompletion(function (weather) {
+    console.log(weather);
+    done();
+  });
+
+
+
+
+
+
+
+
+
+
+  // moving the proxy operation into the Operation abstraction
+  fetchCurrentCity()
+    .then(function (city) {
+      return fetchWeather(city);
+    })
+    .then(function (weather) {
+      console.log(weather);
+      done();
+    });
+
+
+
+
+
+
+
+
+
+  // concision
   fetchCurrentCity()
     .then(fetchWeather)
     .then(printTheWeather);
@@ -149,6 +220,12 @@ test("life is full of async, nesting is inevitable, let's do something about it"
     console.log(weather);
     done();
   }
+
+
+
+
+
+
 
 });
 
