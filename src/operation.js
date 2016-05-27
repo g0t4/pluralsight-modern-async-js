@@ -92,17 +92,27 @@ function Operation() {
 
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
     const noop = function () {};
+    const completionOp = new Operation();
+
+    function successHandler() {
+      if (onSuccess) {
+        const callbackResult = onSuccess(operation.result);
+        if (callbackResult && callbackResult.onCompletion) {
+          callbackResult.forwardCompletion(completionOp);
+        }
+      }
+    }
 
     if (operation.state == "succeeded") {
-      onSuccess(operation.result);
+      successHandler();
     } else if (operation.state == "failed") {
       onError(operation.error);
     } else {
-      operation.successReactions.push(onSuccess || noop);
+      operation.successReactions.push(successHandler);
       operation.errorReactions.push(onError || noop);
     }
 
-    return new Operation();
+    return completionOp;
   };
 
   operation.onFailure = function onFailure(onError) {
@@ -130,11 +140,10 @@ function doLater(func) {
 
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
-  let weatherOp = fetchCurrentCity().onCompletion(function (city) {
-
-    fetchWeather(city).forwardCompletion(weatherOp);
-
-  });
+  let weatherOp = fetchCurrentCity()
+    .onCompletion(function (city) {
+      return fetchWeather(city);
+    });
 
   // some other code needs to use weather response in another part of app 
   weatherOp.onCompletion(weather => done());
