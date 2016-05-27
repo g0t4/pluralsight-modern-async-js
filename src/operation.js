@@ -77,19 +77,28 @@ function Operation() {
   };
 
   operation.fail = function fail(error) {
+    operation.state = "failed";
+    operation.error = error;
     operation.errorReactions.forEach(r => r(error));
   };
 
   operation.succeed = function succeed(result) {
+    operation.state = "succeeded";
+    operation.result = result;
     operation.successReactions.forEach(r => r(result));
   };
 
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
     const noop = function () {};
-    operation.successReactions.push(onSuccess || noop);
-    operation.errorReactions.push(onError || noop);
 
-    
+    if (operation.state == "succeeded") {
+      onSuccess(operation.result);
+    } else if (operation.state == "failed") {
+      onError(operation.error);
+    } else {
+      operation.successReactions.push(onSuccess || noop);
+      operation.errorReactions.push(onError || noop);
+    }
   };
 
   operation.onFailure = function onFailure(onError) {
@@ -107,19 +116,32 @@ function Operation() {
   return operation;
 }
 
+function doLater(func) {
+  setTimeout(func, 1);
+}
+
+test("register error callback async", function (done) {
+
+  var operationThatErrors = fetchWeather();
+
+  doLater(function () {
+
+    operationThatErrors.onFailure(() => done());
+
+  });
+
+});
+
+
 test("register success callback async", function (done) {
 
-  var currentCity = fetchCurrentCity();
-  currentCity.onCompletion(city => console.log(`City found: ${city}`));
+  var operationThatSucceeds = fetchCurrentCity();
 
-  setTimeout(function () {
+  doLater(function () {
 
-    currentCity.onCompletion(function (city) {
-      fetchWeather(city);
-      done();
-    })
+    operationThatSucceeds.onCompletion(() => done());
 
-  }, 1)
+  });
 
 });
 
