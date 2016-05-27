@@ -114,6 +114,7 @@ function Operation() {
 
     return completionOp;
   };
+  operation.then = operation.onCompletion;
 
   operation.onFailure = function onFailure(onError) {
     return operation.onCompletion(null, onError);
@@ -140,13 +141,14 @@ function doLater(func) {
 
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
-  let weatherOp = fetchCurrentCity()
-    .onCompletion(function (city) {
-      return fetchWeather(city);
-    });
+  fetchCurrentCity()
+    .then(fetchWeather)
+    .then(printTheWeather);
 
-  // some other code needs to use weather response in another part of app 
-  weatherOp.onCompletion(weather => done());
+  function printTheWeather(weather) {
+    console.log(weather);
+    done();
+  }
 
 });
 
