@@ -122,15 +122,20 @@ function doLater(func) {
   setTimeout(func, 1);
 }
 
-test("life is full of async, nesting is inevitable, let's do something about it", function () {
+test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
+  let weatherOp = new Operation();
   fetchCurrentCity().onCompletion(function (city) {
 
     fetchWeather(city).onCompletion(function (weather) {
+      weatherOp.succeed(weather);
       console.log(weather);
     });
 
   });
+
+  // some other code needs to use weather response in another part of app 
+  weatherOp.onCompletion(weather => done());
 
 });
 
