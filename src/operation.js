@@ -92,33 +92,41 @@ function Operation() {
 
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
     const noop = function () {};
-    const completionOp = new Operation();
+    const proxyOp = new Operation();
 
     function successHandler() {
       if (onSuccess) {
         const callbackResult = onSuccess(operation.result);
         if (callbackResult && callbackResult.onCompletion) {
-          callbackResult.forwardCompletion(completionOp);
+          callbackResult.forwardCompletion(proxyOp);
         }
+      }
+    }
+
+    function errorHandler(){
+      if(onError){
+        const callbackResult = onError(operation.error);
+        proxyOp.succeed(callbackResult);
       }
     }
 
     if (operation.state == "succeeded") {
       successHandler();
     } else if (operation.state == "failed") {
-      onError(operation.error);
+      errorHandler();
     } else {
       operation.successReactions.push(successHandler);
-      operation.errorReactions.push(onError || noop);
+      operation.errorReactions.push(errorHandler);
     }
 
-    return completionOp;
+    return proxyOp;
   };
   operation.then = operation.onCompletion;
 
   operation.onFailure = function onFailure(onError) {
-    return operation.onCompletion(null, onError);
+    return operation.then(null, onError);
   };
+  operation.catch = operation.onFailure;
 
   operation.nodeCallback = function nodeCallback(error, result) {
     if (error) {
@@ -149,6 +157,11 @@ function fetchCurrentCityThatFails() {
 test("error recovery", function (done) {
 
   fetchCurrentCityThatFails()
+    // register error recovery
+    .catch(function(error){
+      console.log(error);
+      return "default city";
+    })
     .then(function (city) {
       expect(city).toBe("default city");
       done();
