@@ -84,6 +84,10 @@ function Operation() {
   };
 
   operation.succeed = function succeed(result) {
+    if(operation.complete){
+      return;
+    }
+    operation.complete = true;
     operation.state = "succeeded";
     operation.result = result;
     operation.successReactions.forEach(r => r(result));
@@ -166,6 +170,23 @@ function doLater(func) {
   setTimeout(func, 1);
 }
 
+
+function fetchCurrentCityIndecisive() {
+  const operation = new Operation();
+  doLater(function () {
+    operation.succeed("NYC");
+    operation.succeed("Philly");
+  });
+  return operation;
+}
+
+
+test("protect from doubling up on success", function (done) {
+
+  fetchCurrentCityIndecisive()
+    .then(e => done());
+
+});
 
 test("thrown error recovery", function (done) {
 
