@@ -78,6 +78,10 @@ function Operation() {
   };
 
   operation.fail = function fail(error) {
+    if(operation.complete){
+      return;
+    }
+    operation.complete = true;
     operation.state = "failed";
     operation.error = error;
     operation.errorReactions.forEach(r => r(error));
@@ -169,6 +173,23 @@ function Operation() {
 function doLater(func) {
   setTimeout(func, 1);
 }
+
+
+function fetchCurrentCityRepeatedFailures() {
+  const operation = new Operation();
+  doLater(function () {
+    operation.fail(new Error("I failed"));
+    operation.fail(new Error("I failed again!"));
+  });
+  return operation;
+}
+
+test("protect from doubling up on failures", function (done) {
+
+  fetchCurrentCityRepeatedFailures()
+    .catch(e => done());
+
+});
 
 
 function fetchCurrentCityIndecisive() {
