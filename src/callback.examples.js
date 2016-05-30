@@ -23,14 +23,18 @@ test("Verbose, hard to reuse, easy to forget, additional error handling mechanis
       return;
     }
 
-    getWeather(city, function (error, weather) {
-      if (error) {
-        done(error);
-        return;
-      }
-      console.log("weather", weather);
-      done();
-    });
+    try {
+      getWeather(city, function (error, weather) {
+        if (error) {
+          done(error);
+          return;
+        }
+        console.log("weather", weather);
+        done();
+      });
+    } catch (error) {
+      console.log(error);
+    }
 
     console.log(`Weather for ${city}:`);
   });
