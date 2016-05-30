@@ -78,7 +78,7 @@ function Operation() {
   };
 
   operation.fail = function fail(error) {
-    if(operation.complete){
+    if (operation.complete) {
       return;
     }
     operation.complete = true;
@@ -88,7 +88,7 @@ function Operation() {
   };
 
   operation.succeed = function succeed(result) {
-    if(operation.complete){
+    if (operation.complete) {
       return;
     }
     operation.complete = true;
@@ -174,6 +174,32 @@ function doLater(func) {
   setTimeout(func, 1);
 }
 
+
+function fetchCurrentCity2() {
+  var operation = new Operation();
+  console.log("Getting weather");
+  operation.succeed("New York, NY");
+  return operation;
+}
+
+test("what does this print out?", function (done) {
+
+  let ui;
+
+  fetchCurrentCity2()
+    .then(function (city) {
+      ui = `You are from ${city}`;
+    });
+
+  ui = "loading..";
+
+  // assume we are a human looking at the screen 1 second later
+  setTimeout(function () {
+    expect(ui).toBe(`You are from New York, NY`);
+    done();
+  }, 1000)
+
+});
 
 function fetchCurrentCityRepeatedFailures() {
   const operation = new Operation();
