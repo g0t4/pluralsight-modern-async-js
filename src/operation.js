@@ -98,7 +98,9 @@ function Operation() {
         const callbackResult = onSuccess(operation.result);
         if (callbackResult && callbackResult.then) {
           callbackResult.forwardCompletion(proxyOp);
+          return;
         }
+        proxyOp.succeed(callbackResult);
       }
       else proxyOp.succeed(operation.result);
     }
@@ -234,6 +236,22 @@ test("reusing error handlers - errors anywhere!", function (done) {
     })
 
 });
+
+
+test("sync result transformation", function (done) {
+
+  fetchCurrentCity()
+    .then(function (city) {
+      // say we have a synchronous cache of city to zip code mappings
+      return "10019";
+    })
+    .then(function (zip) {
+      expect(zip).toBe("10019");
+      done();
+    });
+
+});
+
 
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
