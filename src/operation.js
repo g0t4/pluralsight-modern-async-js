@@ -102,6 +102,7 @@ function Operation() {
           callbackResult.forwardCompletion(proxyOp);
         }
       }
+      else proxyOp.succeed(operation.result);
     }
 
     function errorHandler() {
