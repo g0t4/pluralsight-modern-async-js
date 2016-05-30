@@ -113,7 +113,13 @@ function Operation() {
 
     function errorHandler() {
       if (onError) {
-        const callbackResult = onError(operation.error);
+        let callbackResult;
+        try {
+          callbackResult = onError(operation.error);
+        } catch (error) {
+          proxyOp.fail(error);
+          return;
+        }
         if (callbackResult && callbackResult.then) {
           callbackResult.forwardCompletion(proxyOp);
           return;
@@ -172,6 +178,24 @@ test("thrown error recovery", function (done) {
 
 });
 
+
+test("error, error recovery", function (done) {
+
+  fetchCurrentCity()
+    .then(function (city) {
+      throw new Error("Oh noes");
+      return fetchWeather(city);
+    })
+    .catch(function (error) {
+      expect(error.message).toBe("Oh noes");
+      throw new Error("Error from an error handler, ohhh my!");
+    })
+    .catch(function (error) {
+      expect(error.message).toBe("Error from an error handler, ohhh my!");
+      done();
+    });
+
+});
 
 function fetchCurrentCityThatFails() {
   var operation = new Operation();
