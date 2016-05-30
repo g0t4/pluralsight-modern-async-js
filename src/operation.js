@@ -4,8 +4,7 @@ const expectedCurrentCity = "New York, NY";
 function getCurrentCity(callback) {
   setTimeout(function () {
 
-    const city = "New York, NY";
-    callback(null, city);
+    callback(null, expectedCurrentCity);
 
   }, delayms)
 }
@@ -28,6 +27,9 @@ function getWeather(city, callback) {
   }, delayms)
 }
 
+const expectedForecast = {
+  fiveDay: [60, 70, 80, 45, 50]
+};
 function getForecast(city, callback) {
   console.log("Getting forecast");
   setTimeout(function () {
@@ -37,11 +39,7 @@ function getForecast(city, callback) {
       return;
     }
 
-    const fiveDay = {
-      fiveDay: [60, 70, 80, 45, 50]
-    };
-
-    callback(null, fiveDay)
+    callback(null, expectedForecast)
 
   }, delayms)
 }
@@ -114,6 +112,7 @@ function Operation() {
         }
         proxyOp.succeed(callbackResult);
       }
+      else proxyOp.fail(operation.error);
     }
 
     if (operation.state == "succeeded") {
@@ -156,7 +155,7 @@ function doLater(func) {
 
 function fetchCurrentCityThatFails() {
   var operation = new Operation();
-  doLater(() => operation.fail("GPS broken"));
+  doLater(() => operation.fail(new Error("GPS broken")));
   return operation;
 }
 
@@ -196,6 +195,43 @@ test("error recovery bypassed if not needed", function (done) {
       expect(city).toBe(expectedCurrentCity);
       done();
     });
+
+});
+
+
+test("error fallthrough", function (done) {
+
+  fetchCurrentCityThatFails()
+    .then(function (city) {
+      console.log(city);
+      return fetchForecast(city);
+    })
+    .then(function (forecast) {
+      expect(forecast).toBe(expectedForecast);
+    })
+    .catch(function (error) {
+      done();
+    })
+
+});
+
+
+test("reusing error handlers - errors anywhere!", function (done) {
+
+  // compare this to the test above "error fallthrough",
+  // just originating error in a different location,
+  // same error handler used!
+  fetchCurrentCity()
+    .then(function (city) {
+      console.log(city);
+      return fetchForecast();
+    })
+    .then(function (forecast) {
+      expect(forecast).toBe(expectedForecast);
+    })
+    .catch(function (error) {
+      done();
+    })
 
 });
 
