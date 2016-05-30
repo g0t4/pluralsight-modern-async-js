@@ -187,6 +187,16 @@ test("async error recovery", function (done) {
 
 });
 
+test("error recovery bypassed if not needed", function (done) {
+
+  fetchCurrentCity()
+    .catch(error => "default city")
+    .then(function (city) {
+      expect(city).toBe(expectedCurrentCity);
+      done();
+    });
+
+});
 
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
