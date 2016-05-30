@@ -139,6 +139,33 @@ function doLater(func) {
   setTimeout(func, 1);
 }
 
+
+function fetchCurrentCityThatFails() {
+  var operation = new Operation();
+  doLater(() => operation.fail("GPS broken"));
+  return operation;
+}
+
+test("error recovery", function (done) {
+
+  fetchCurrentCityThatFails()
+    .then(function (city) {
+      expect(city).toBe("default city");
+      done();
+    });
+
+});
+
+
+
+
+
+
+
+
+
+
+
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
 
   fetchCurrentCity()
