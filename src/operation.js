@@ -1,5 +1,6 @@
 const delayms = 1;
 
+const expectedCurrentCity = "New York, NY";
 function getCurrentCity(callback) {
   setTimeout(function () {
 
@@ -97,15 +98,19 @@ function Operation() {
     function successHandler() {
       if (onSuccess) {
         const callbackResult = onSuccess(operation.result);
-        if (callbackResult && callbackResult.onCompletion) {
+        if (callbackResult && callbackResult.then) {
           callbackResult.forwardCompletion(proxyOp);
         }
       }
     }
 
-    function errorHandler(){
-      if(onError){
+    function errorHandler() {
+      if (onError) {
         const callbackResult = onError(operation.error);
+        if (callbackResult && callbackResult.then) {
+          callbackResult.forwardCompletion(proxyOp);
+          return;
+        }
         proxyOp.succeed(callbackResult);
       }
     }
@@ -154,11 +159,11 @@ function fetchCurrentCityThatFails() {
   return operation;
 }
 
-test("error recovery", function (done) {
+test("sync error recovery", function (done) {
 
   fetchCurrentCityThatFails()
-    // register error recovery
-    .catch(function(error){
+  // register error recovery
+    .catch(function (error) {
       console.log(error);
       return "default city";
     })
@@ -169,14 +174,18 @@ test("error recovery", function (done) {
 
 });
 
+test("async error recovery", function (done) {
 
+  fetchCurrentCityThatFails()
+    .catch(function () {
+      return fetchCurrentCity();
+    })
+    .then(function (city) {
+      expect(city).toBe(expectedCurrentCity);
+      done();
+    });
 
-
-
-
-
-
-
+});
 
 
 test("life is full of async, nesting is inevitable, let's do something about it", function (done) {
