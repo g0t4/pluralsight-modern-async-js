@@ -95,7 +95,13 @@ function Operation() {
 
     function successHandler() {
       if (onSuccess) {
-        const callbackResult = onSuccess(operation.result);
+        let callbackResult;
+        try {
+          callbackResult = onSuccess(operation.result);
+        } catch (error) {
+          proxyOp.fail(error);
+          return;
+        }
         if (callbackResult && callbackResult.then) {
           callbackResult.forwardCompletion(proxyOp);
           return;
@@ -153,6 +159,18 @@ function Operation() {
 function doLater(func) {
   setTimeout(func, 1);
 }
+
+
+test("thrown error recovery", function (done) {
+
+  fetchCurrentCity()
+    .then(function (city) {
+      throw new Error("Oh noes");
+      return fetchWeather(city);
+    })
+    .catch(e => done());
+
+});
 
 
 function fetchCurrentCityThatFails() {
