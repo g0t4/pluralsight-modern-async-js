@@ -88,7 +88,7 @@ function Operation() {
   };
   operation.reject = operation.fail;
 
-  operation.succeed = function succeed(result) {
+  function succeed(result) {
     if (operation.complete) {
       return;
     }
@@ -96,16 +96,18 @@ function Operation() {
     operation.state = "succeeded";
     operation.result = result;
     operation.successReactions.forEach(r => r(result));
-  };
-  operation.resolve = function resolve(value){
+  }
+
+  operation.resolve = function resolve(value) {
     // value could be a promise
     if (value && value.then) {
-      value.forwardCompletion(operation);
+      value.then(operation.resolve, operation.fail);
       return;
     }
     // or a result
-    operation.succeed(value);
+    succeed(value);
   };
+
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
     const noop = function () {};
     const proxyOp = new Operation();
@@ -123,7 +125,7 @@ function Operation() {
           }
           proxyOp.resolve(callbackResult);
         }
-        else proxyOp.succeed(operation.result);
+        else proxyOp.resolve(operation.result);
 
       });
     }
@@ -164,15 +166,12 @@ function Operation() {
 
   operation.nodeCallback = function nodeCallback(error, result) {
     if (error) {
-      operation.fail(error);
+      operation.reject(error);
       return;
     }
-    operation.succeed(result);
+    operation.resolve(result);
   };
 
-  operation.forwardCompletion = function (op) {
-    operation.then(op.succeed, op.fail);
-  };
 
   return operation;
 }
@@ -184,7 +183,7 @@ function doLater(func) {
 test("what is resolve?", function (done) {
 
   const fetchCurrentCity = new Operation();
-  fetchCurrentCity.succeed("NYC");
+  fetchCurrentCity.resolve("NYC");
 
   const fetchClone = new Operation();
   fetchClone.resolve(fetchCurrentCity);
@@ -198,7 +197,7 @@ test("what is resolve?", function (done) {
 
 test("ensure success handlers are async", function (done) {
   var operation = new Operation();
-  operation.succeed("New York, NY");
+  operation.resolve("New York, NY");
   operation.then(function (city) {
     doneAlias();
   });
@@ -263,8 +262,8 @@ test("protect from doubling up on failures", function (done) {
 function fetchCurrentCityIndecisive() {
   const operation = new Operation();
   doLater(function () {
-    operation.succeed("NYC");
-    operation.succeed("Philly");
+    operation.resolve("NYC");
+    operation.resolve("Philly");
   });
   return operation;
 }
