@@ -83,19 +83,24 @@ function Operation() {
     }
     operation.complete = true;
     internalReject(error);
- };
+  };
   operation.reject = operation.fail;
-  function internalReject(error){
+  function internalReject(error) {
     operation.state = "failed";
     operation.error = error;
     operation.errorReactions.forEach(r => r(error));
   }
 
-  function succeed(result) {
-
+  function internalResolve(value) {
+    // value could be a promise
+    if (value && value.then) {
+      value.then(internalResolve, internalReject);
+      return;
+    }
+    // or a result
     operation.state = "succeeded";
-    operation.result = result;
-    operation.successReactions.forEach(r => r(result));
+    operation.result = value;
+    operation.successReactions.forEach(r => r(value));
   }
 
   operation.resolve = function resolve(value) {
@@ -103,13 +108,7 @@ function Operation() {
       return;
     }
     operation.complete = true;
-    // value could be a promise
-    if (value && value.then) {
-      value.then(succeed, internalReject);
-      return;
-    }
-    // or a result
-    succeed(value);
+    internalResolve(value);
   };
 
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
