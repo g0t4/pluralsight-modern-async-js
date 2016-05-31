@@ -77,14 +77,14 @@ function Operation() {
     errorReactions: []
   };
 
-  operation.fail = function fail(error) {
-    if (operation.complete) {
+  operation.reject = function fail(error) {
+    if (operation.resolved) {
       return;
     }
-    operation.complete = true;
+    operation.resolved = true;
     internalReject(error);
   };
-  operation.reject = operation.fail;
+
   function internalReject(error) {
     operation.state = "failed";
     operation.error = error;
@@ -104,10 +104,10 @@ function Operation() {
   }
 
   operation.resolve = function resolve(value) {
-    if (operation.complete) {
+    if (operation.resolved) {
       return;
     }
-    operation.complete = true;
+    operation.resolved = true;
     internalResolve(value);
   };
 
@@ -175,6 +175,7 @@ function Operation() {
     operation.resolve(result);
   };
 
+  operation.fail = operation.reject;
 
   return operation;
 }
