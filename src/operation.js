@@ -82,11 +82,14 @@ function Operation() {
       return;
     }
     operation.complete = true;
+    internalReject(error);
+ };
+  operation.reject = operation.fail;
+  function internalReject(error){
     operation.state = "failed";
     operation.error = error;
     operation.errorReactions.forEach(r => r(error));
-  };
-  operation.reject = operation.fail;
+  }
 
   function succeed(result) {
 
@@ -102,7 +105,7 @@ function Operation() {
     operation.complete = true;
     // value could be a promise
     if (value && value.then) {
-      value.then(operation.resolve, operation.fail);
+      value.then(succeed, internalReject);
       return;
     }
     // or a result
