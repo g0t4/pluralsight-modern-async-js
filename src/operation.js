@@ -102,39 +102,45 @@ function Operation() {
     const proxyOp = new Operation();
 
     function successHandler() {
-      if (onSuccess) {
-        let callbackResult;
-        try {
-          callbackResult = onSuccess(operation.result);
-        } catch (error) {
-          proxyOp.fail(error);
-          return;
+      doLater(function () {
+
+        if (onSuccess) {
+          let callbackResult;
+          try {
+            callbackResult = onSuccess(operation.result);
+          } catch (error) {
+            proxyOp.fail(error);
+            return;
+          }
+          if (callbackResult && callbackResult.then) {
+            callbackResult.forwardCompletion(proxyOp);
+            return;
+          }
+          proxyOp.succeed(callbackResult);
         }
-        if (callbackResult && callbackResult.then) {
-          callbackResult.forwardCompletion(proxyOp);
-          return;
-        }
-        proxyOp.succeed(callbackResult);
-      }
-      else proxyOp.succeed(operation.result);
+        else proxyOp.succeed(operation.result);
+
+      });
     }
 
     function errorHandler() {
-      if (onError) {
-        let callbackResult;
-        try {
-          callbackResult = onError(operation.error);
-        } catch (error) {
-          proxyOp.fail(error);
-          return;
+      doLater(function () {
+        if (onError) {
+          let callbackResult;
+          try {
+            callbackResult = onError(operation.error);
+          } catch (error) {
+            proxyOp.fail(error);
+            return;
+          }
+          if (callbackResult && callbackResult.then) {
+            callbackResult.forwardCompletion(proxyOp);
+            return;
+          }
+          proxyOp.succeed(callbackResult);
         }
-        if (callbackResult && callbackResult.then) {
-          callbackResult.forwardCompletion(proxyOp);
-          return;
-        }
-        proxyOp.succeed(callbackResult);
-      }
-      else proxyOp.fail(operation.error);
+        else proxyOp.fail(operation.error);
+      });
     }
 
     if (operation.state == "succeeded") {
@@ -174,32 +180,52 @@ function doLater(func) {
   setTimeout(func, 1);
 }
 
-
-function fetchCurrentCity2() {
+test("ensure success handlers are async", function (done) {
   var operation = new Operation();
-  console.log("Getting weather");
   operation.succeed("New York, NY");
-  return operation;
-}
+  operation.then(function (city) {
+    doneAlias();
+  });
 
-test("what does this print out?", function (done) {
-
-  let ui;
-
-  fetchCurrentCity2()
-    .then(function (city) {
-      ui = `You are from ${city}`;
-    });
-
-  ui = "loading..";
-
-  // assume we are a human looking at the screen 1 second later
-  setTimeout(function () {
-    expect(ui).toBe(`You are from New York, NY`);
-    done();
-  }, 1000)
-
+  const doneAlias = done;
 });
+
+test("ensure error handlers are async", function (done) {
+  var operation = new Operation();
+  operation.fail(new Error("oh noes"));
+  operation.catch(function (error) {
+    doneAlias();
+  });
+
+  const doneAlias = done;
+});
+/*
+ function fetchCurrentCity2() {
+ var operation = new Operation();
+ console.log("Getting weather");
+ operation.succeed("New York, NY");
+ return operation;
+ }
+
+ test("what does this print out?", function (done) {
+
+ let ui;
+
+ fetchCurrentCity2()
+ .then(function (city) {
+ ui = `You are from ${city}`;
+ });
+
+ ui = "loading..";
+
+ // assume we are a human looking at the screen 1 second later
+ setTimeout(function () {
+ expect(ui).toBe(`You are from New York, NY`);
+ done();
+ }, 1000)
+
+ });
+ */
 
 function fetchCurrentCityRepeatedFailures() {
   const operation = new Operation();
