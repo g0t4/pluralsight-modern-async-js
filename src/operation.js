@@ -180,6 +180,21 @@ function doLater(func) {
   setTimeout(func, 1);
 }
 
+test("what is resolve?", function (done) {
+
+  const fetchCurrentCity = new Operation();
+  fetchCurrentCity.succeed("NYC");
+
+  const fetchClone = new Operation();
+  fetchClone.resolve(fetchCurrentCity);
+
+  fetchClone.then(function (city) {
+    expect(city).toBe("NYC");
+    done();
+  })
+
+});
+
 test("ensure success handlers are async", function (done) {
   var operation = new Operation();
   operation.succeed("New York, NY");
