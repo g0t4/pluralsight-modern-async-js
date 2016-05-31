@@ -86,6 +86,7 @@ function Operation() {
     operation.error = error;
     operation.errorReactions.forEach(r => r(error));
   };
+  operation.reject = operation.fail;
 
   operation.succeed = function succeed(result) {
     if (operation.complete) {
@@ -96,7 +97,15 @@ function Operation() {
     operation.result = result;
     operation.successReactions.forEach(r => r(result));
   };
-
+  operation.resolve = function resolve(value){
+    // value could be a promise
+    if (value && value.then) {
+      value.forwardCompletion(operation);
+      return;
+    }
+    // or a result
+    operation.succeed(value);
+  };
   operation.onCompletion = function setCallbacks(onSuccess, onError) {
     const noop = function () {};
     const proxyOp = new Operation();
@@ -112,11 +121,7 @@ function Operation() {
             proxyOp.fail(error);
             return;
           }
-          if (callbackResult && callbackResult.then) {
-            callbackResult.forwardCompletion(proxyOp);
-            return;
-          }
-          proxyOp.succeed(callbackResult);
+          proxyOp.resolve(callbackResult);
         }
         else proxyOp.succeed(operation.result);
 
@@ -133,11 +138,7 @@ function Operation() {
             proxyOp.fail(error);
             return;
           }
-          if (callbackResult && callbackResult.then) {
-            callbackResult.forwardCompletion(proxyOp);
-            return;
-          }
-          proxyOp.succeed(callbackResult);
+          proxyOp.resolve(callbackResult);
         }
         else proxyOp.fail(operation.error);
       });
@@ -170,7 +171,7 @@ function Operation() {
   };
 
   operation.forwardCompletion = function (op) {
-    operation.onCompletion(op.succeed, op.fail);
+    operation.then(op.succeed, op.fail);
   };
 
   return operation;
