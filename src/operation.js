@@ -89,16 +89,17 @@ function Operation() {
   operation.reject = operation.fail;
 
   function succeed(result) {
-    if (operation.complete) {
-      return;
-    }
-    operation.complete = true;
+
     operation.state = "succeeded";
     operation.result = result;
     operation.successReactions.forEach(r => r(result));
   }
 
   operation.resolve = function resolve(value) {
+    if (operation.complete) {
+      return;
+    }
+    operation.complete = true;
     // value could be a promise
     if (value && value.then) {
       value.then(operation.resolve, operation.fail);
