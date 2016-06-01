@@ -47,9 +47,17 @@ function getForecast(city, callback) {
 suite.only("operations");
 
 function fetchCurrentCity() {
-  const operation = new Operation();
+  const operation = new Operation(function executor(resolve, reject) {
 
-  getCurrentCity(operation.nodeCallback);
+    getCurrentCity(function nodeCallback(error, result) {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(result);
+    });
+
+  });
 
   return operation;
 }
