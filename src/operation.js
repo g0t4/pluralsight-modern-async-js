@@ -211,24 +211,36 @@ test("what is resolve?", function (done) {
 
 });
 
+Operation.resolve = function (value) {
+
+  return new Operation(function executor(resolve, reject) {
+    resolve(value);
+  });
+
+};
+
 test("ensure success handlers are async", function (done) {
-  var operation = new Operation(function executor(resolve, reject) {
-    resolve("New York, NY");
-  });
-  operation.then(function (city) {
-    doneAlias();
-  });
+  Operation.resolve("New York, NY")
+    .then(function (city) {
+      doneAlias();
+    });
 
   const doneAlias = done;
 });
 
+Operation.reject = function (reason) {
+
+  return new Operation(function (resolve, reject) {
+    reject(reason);
+  });
+
+};
+
 test("ensure error handlers are async", function (done) {
-  var operation = new Operation(function executor(resolve, reject) {
-    reject(new Error("oh noes"));
-  });
-  operation.catch(function (error) {
-    doneAlias();
-  });
+  Operation.reject(new Error("oh noes"))
+    .catch(function (error) {
+      doneAlias();
+    });
 
   const doneAlias = done;
 });
