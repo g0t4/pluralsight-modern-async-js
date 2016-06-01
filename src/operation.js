@@ -299,10 +299,9 @@ function fetchCurrentCityIndecisive() {
 }
 
 
-test("protect from doubling up on success", function (done) {
+test("protect from doubling up on success", function () {
 
-  fetchCurrentCityIndecisive()
-    .then(e => done());
+  return fetchCurrentCityIndecisive();
 
 });
 
