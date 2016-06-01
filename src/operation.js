@@ -70,7 +70,7 @@ function fetchWeather(city) {
   return operation;
 }
 
-function Operation() {
+function Operation(executor) {
 
   const operation = {
     successReactions: [],
@@ -177,6 +177,10 @@ function Operation() {
 
   operation.fail = operation.reject;
 
+  if (executor) {
+    executor(operation.resolve, operation.reject);
+  }
+
   return operation;
 }
 
@@ -200,8 +204,9 @@ test("what is resolve?", function (done) {
 });
 
 test("ensure success handlers are async", function (done) {
-  var operation = new Operation();
-  operation.resolve("New York, NY");
+  var operation = new Operation(function executor(resolve, reject) {
+    resolve("New York, NY");
+  });
   operation.then(function (city) {
     doneAlias();
   });
@@ -210,8 +215,9 @@ test("ensure success handlers are async", function (done) {
 });
 
 test("ensure error handlers are async", function (done) {
-  var operation = new Operation();
-  operation.fail(new Error("oh noes"));
+  var operation = new Operation(function executor(resolve, reject) {
+    reject(new Error("oh noes"));
+  });
   operation.catch(function (error) {
     doneAlias();
   });
