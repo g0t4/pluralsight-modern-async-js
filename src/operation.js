@@ -418,16 +418,15 @@ test("reusing error handlers - errors anywhere!", function (done) {
 });
 
 
-test("sync result transformation", function (done) {
+test("sync result transformation", function () {
 
-  fetchCurrentCity()
+  return fetchCurrentCity()
     .then(function (city) {
       // say we have a synchronous cache of city to zip code mappings
       return "10019";
     })
     .then(function (zip) {
       expect(zip).toBe("10019");
-      done();
     });
 
 });
