@@ -1,6 +1,6 @@
 const city = "New York, NY";
 const appid = 'bad6f8a83fe5c5b46cf478d12a8c638c';
-const weatherUrl = `http://apis.openweathermap.org/data/2.5/weather?q=${city}&appid=${appid}&units=imperial`;
+const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${appid}&units=imperial`;
 const fiveDayUrl = `http://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${appid}&units=imperial`;
 
 
@@ -12,9 +12,9 @@ function* me() {
 
   const fiveDay = yield fetch(fiveDayUrl).then(r => r.json());
 
-  console.log(number);
   console.log(fiveDay);
   console.log(weather);
+  return { fiveDay, weather};
 }
 
 ///////////////////
@@ -25,7 +25,7 @@ assistant(meGenerator)
     console.log("recover from error:" + error);
   })
   .then(function(result){
-    console.log(`Assistant is done`);
+    console.log(`Assistant is done`,result);
   })
 
 
@@ -56,6 +56,7 @@ function assistant(generator) {
         return;
       }
       if (next.done) {
+        resolve(next.value)
         return;
       }
       //console.log(next);
