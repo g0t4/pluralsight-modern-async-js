@@ -4,17 +4,30 @@ const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?q=${city}&app
 const fiveDayUrl = `http://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${appid}&units=imperial`;
 
 
-fetch(weatherUrl)
-  .then(function(response) {
-    return response.json();
-  })
-  .then(function(weather) {
-    console.log(weather);
-  });
-
+function* me(){
+  const response = yield fetch(weatherUrl);
+  console.log(response);
+}
 
 ///////////////////
 
-function assistant(){
+const meGenerator = me();
+assistant(meGenerator);
 
+function assistant(generator){
+  const next = generator.next();
+  console.log(next);
+  const promise = next.value;
+  promise.then(result => generator.next(result));
 }
+
+/*
+ fetch(weatherUrl)
+ .then(function(response) {
+ return response.json();
+ })
+ .then(function(weather) {
+ console.log(weather);
+ });
+ */
+  
