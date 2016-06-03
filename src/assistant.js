@@ -20,7 +20,10 @@ function* me() {
 ///////////////////
 
 const meGenerator = me();
-assistant(meGenerator);
+assistant(meGenerator)
+  .catch(function rejectionReaction(error) {
+    console.log("recover from error:" + error);
+  })
 
 
 
@@ -37,29 +40,33 @@ assistant(meGenerator);
 
 
 function assistant(generator) {
-  remind(() => generator.next());
 
-  function remind(resume) {
-    let next;
-    try {
-      next = resume();
-    } catch (error) {
-      console.log(error);
-      return;
+  return new Promise(function executor(resolve, reject) {
+    remind(() => generator.next());
+
+    function remind(resume) {
+      let next;
+      try {
+        next = resume();
+      } catch (error) {
+        reject(error);
+        return;
+      }
+      if (next.done) {
+        return;
+      }
+      //console.log(next);
+      const promise = Promise.resolve(next.value);
+      promise.then(
+        function fulfillmentReaction(result) {
+          remind(() => generator.next(result))
+        },
+        function rejectionReaction(error) {
+          remind(() => generator.throw(error))
+        });
     }
-    if (next.done) {
-      return;
-    }
-    //console.log(next);
-    const promise = Promise.resolve(next.value);
-    promise.then(
-      function fulfillmentReaction(result) {
-        remind(() => generator.next(result))
-      },
-      function rejectionReaction(error) {
-        remind(() => generator.throw(error))
-      });
-  }
+  });
+
 }
 
 /*
