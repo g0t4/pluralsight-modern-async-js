@@ -7,18 +7,14 @@ const fiveDayUrl = `http://api.openweathermap.org/data/2.5/forecast?q=${city}&ap
 
 
 function* me() {
-  try {
-    const response = yield fetch(weatherUrl);
-    const weather = yield response.json();
+  const response = yield fetch(weatherUrl);
+  const weather = yield response.json();
 
-    const fiveDay = yield fetch(fiveDayUrl).then(r => r.json());
+  const fiveDay = yield fetch(fiveDayUrl).then(r => r.json());
 
-    console.log(number);
-    console.log(fiveDay);
-    console.log(weather);
-  } catch (error) {
-    console.log("Failed to get the weather");
-  }
+  console.log(number);
+  console.log(fiveDay);
+  console.log(weather);
 }
 
 ///////////////////
@@ -44,7 +40,13 @@ function assistant(generator) {
   remind(() => generator.next());
 
   function remind(resume) {
-    const next = resume();
+    let next;
+    try {
+      next = resume();
+    } catch (error) {
+      console.log(error);
+      return;
+    }
     if (next.done) {
       return;
     }
