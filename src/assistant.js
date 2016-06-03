@@ -4,9 +4,16 @@ const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?q=${city}&app
 const fiveDayUrl = `http://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${appid}&units=imperial`;
 
 
+
+
 function* me(){
   const response = yield fetch(weatherUrl);
-  console.log(response);
+  const weather = yield response.json();
+
+  const fiveDay = yield fetch(fiveDayUrl).then(r => r.json());
+
+  console.log(fiveDay);
+  console.log(weather);
 }
 
 ///////////////////
@@ -14,11 +21,31 @@ function* me(){
 const meGenerator = me();
 assistant(meGenerator);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function assistant(generator){
-  const next = generator.next();
-  console.log(next);
-  const promise = next.value;
-  promise.then(result => generator.next(result));
+  remind();
+  function remind(waitingFor){
+    const next = generator.next(waitingFor);
+    if(next.done){
+      return;
+    }
+    //console.log(next);
+    const promise = next.value;
+    promise.then(result => remind(result));
+  }
 }
 
 /*
