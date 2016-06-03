@@ -11,3 +11,10 @@ fetch(weatherUrl)
   .then(function(weather) {
     console.log(weather);
   });
+
+
+///////////////////
+
+function assistant(){
+
+}
