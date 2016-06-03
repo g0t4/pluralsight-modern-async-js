@@ -24,6 +24,9 @@ assistant(meGenerator)
   .catch(function rejectionReaction(error) {
     console.log("recover from error:" + error);
   })
+  .then(function(result){
+    console.log(`Assistant is done`);
+  })
 
 
 
