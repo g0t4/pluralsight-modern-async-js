@@ -11,7 +11,8 @@ function* me(){
   const weather = yield response.json();
 
   const fiveDay = yield fetch(fiveDayUrl).then(r => r.json());
-
+  const number = yield 5;
+  console.log(number);
   console.log(fiveDay);
   console.log(weather);
 }
@@ -43,7 +44,7 @@ function assistant(generator){
       return;
     }
     //console.log(next);
-    const promise = next.value;
+    const promise = Promise.resolve(next.value);
     promise.then(result => remind(result));
   }
 }
